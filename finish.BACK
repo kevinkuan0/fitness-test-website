@@ -1,0 +1,177 @@
+<?
+	session_start();
+	if( !isset($_SESSION["sid"]) )
+		header("Location:http://localhost/fitness2/index.php");
+	
+	$dbhost = '140.113.65.205';
+    $dbuser = 'fitness';
+    $dbpass = 'fitness';
+    $dbname = 'fitness';
+	
+	$conn = mysql_connect($dbhost, $dbuser, $dbpass) or die('Error with MySQL connection');
+	mysql_query("SET NAMES utf8") or die('query failed!'); 
+	mysql_select_db($dbname);
+	mysql_query( "UPDATE `user` SET `time`='$_POST[time]', no_hint='$_POST[no_hint]', score='$_POST[score]', dscore='$_POST[dscore]' WHERE sid='$_SESSION[sid]'" ) or die ("update failed!");
+	mysql_close();
+	
+	if( $_POST['dscore']>80 )
+		$grade_src = 'images/finish/grade1.png';
+	else if( $_POST['dscore']>60 && $_POST['dscore']<80 )
+		$grade_src = 'images/finish/grade2.png';
+	else if( $_POST['dscore']>40 && $_POST['dscore']<60 )
+		$grade_src = 'images/finish/grade3.png';
+	else
+		$grade_src = 'images/finish/grade4.png';
+?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
+<link rel="stylesheet" type="text/css" href="base.css" />
+<style type="text/css">
+
+#bubble
+{
+z-index: 1;
+position: absolute;  left: 90px;  top: 110px;
+width:620px;  height:170px;
+}
+
+#fitman
+{
+position: absolute;  left: 40px;  top: 260px;
+width:230px;  height:300px;
+}
+
+#time_hint
+{
+background-color: green;
+border: 1px solid black;
+position: absolute;  left: 290px;  top: 300px;
+width: 180px; height: 240px;
+}
+
+.time_hint_block
+{
+border: 1px solid black;
+margin: 0px; padding: 0px; 
+}
+
+.caption
+{
+border: 1px solid black;
+margin: 0px; padding: 0px; 
+text-align: center; line-height: 30px; font-size: 26px;
+color: white;
+font-family: "微軟正黑體","細明體","Times New Roman",monospace;
+}
+
+.value
+{
+border: 1px solid black;
+margin: 0px; padding: 0px; 
+text-align: center; line-height: 60px; font-size: 50px;
+color: white;
+font-family: "微軟正黑體","細明體","Times New Roman",monospace;
+}
+
+#score_table
+{
+background-color: gold;
+border: 4px solid red;
+position: absolute;  left: 500px;  top: 300px;
+width:260px;  height:260px;
+}
+
+#score_table tr td{
+position: relative;
+border: 4px solid red;
+}
+
+#real_score{ background-image: url('images/finish/real_score.png');background-size: 100% 100%; }
+#dynamic_score{ background-image: url('images/finish/dynamic_score.png');background-size: 100% 100%; }
+#grade{ background-image: url('images/finish/grade.png');background-size: 100% 100%; }
+
+.score td p
+{
+position: absolute; left: 42px; top: 54px; margin:0px; 
+width: 70px; height: 60px;
+line-height: 60px; font-size: 60px;
+color: red;
+font-family: "微軟正黑體","細明體","Times New Roman",monospace;
+}
+
+#grade img{  
+border: 3px solid red;
+position: absolute; left: 30px; top: 30px; margin:0px; 
+width: 80px; height: 80px;
+}
+
+#button
+{
+background-image: url('images/finish/button.png'); background-size: 100% 100%;
+position: absolute; left: 10px; top: 35px; margin:0px;
+width: 100px; height: 50px;
+}
+</style>
+
+<script type="text/javascript">
+
+var b2_visible = true;
+function shine()
+{
+	if( b2_visible ) 
+		document.getElementById("button").style.backgroundImage = "none";
+	else 
+		document.getElementById("button").style.backgroundImage = "url(images/finish/button.png)";
+	b2_visible = !b2_visible;
+	setTimeout("shine()",1000);
+}
+
+function go_to_form()
+{
+	document.location.href = "form.php";
+}
+</script>
+</head>
+
+<body onload="shine()">
+
+<div class="main">
+	<img class="heading1" src="images/heading1.png" />
+	<img id="bubble" src="images/finish/bubble.png" />
+	<img id="fitman" src="images/finish/fitman.png" />
+	<table id="time_hint">
+		<tr class="time_hint_block" id="timev">
+			<td class="caption">每題<br />時間</td>
+			<td class="value"><? echo round( $_POST["time"]/25 ) ?><span style="font-size:20px;line-height:20px;">秒</span></td>
+		</tr>
+		<tr class="time_hint_block" id="timet">
+			<td class="caption">總<br />時間</td>
+			<td class="value"><? echo round( $_POST["time"]/60 )  ?><span style="font-size:20px;line-height:20px;">分</span></td>
+		</tr>
+		<tr class="time_hint_block" id="hintv">
+			<td class="caption">每題<br />提示</td>
+			<td class="value"><? echo $_POST["no_hint"] / 25 ?></td>
+		</tr>
+		<tr class="time_hint_block" id="hintt">
+			<td class="caption">總<br />提示</td>
+			<td class="value"><? echo $_POST["no_hint"]?> </td>
+		</tr>
+	</table>
+	<table id="score_table">
+		<tr class="score">
+			<td id="dynamic_score"><p><? echo $_POST["dscore"] ?></p></td>
+			<td id="real_score"><p><? echo $_POST["score"] ?></p></td>
+		</tr>
+		<tr>
+			<td id="grade"><img src="<? echo $grade_src; ?>" /></td>
+			<td ><div id="button" onclick="go_to_form()"></div></td>
+		</tr>
+	</table>
+</div>
+
+</body>
+
+</html>
